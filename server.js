@@ -1,28 +1,48 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const fs = require("fs");
 
 const app = express();
-const PORT = 3000;
+app.use(cors());
+app.use(bodyParser.json());
+const PORT = process.env.PORT || 4000;
 
 let users = [];
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
+// Загрузка пользователей из файла
+function loadUsers() {
+    if (fs.existsSync("./users.json")) {
+        const data = fs.readFileSync("./users.json");
+        users = JSON.parse(data);
+    }
+}
 
-// Эндпоинт для получения всех пользователей
+// Сохранение пользователей в файл
+function saveUsers() {
+    fs.writeFileSync("./users.json", JSON.stringify(users));
+}
+
 app.get("/api/users", (req, res) => {
     res.json(users);
 });
 
-// Эндпоинт для добавления пользователей
 app.post("/api/users", (req, res) => {
-    users = req.body; // Сохраняем полученные данные
-    res.sendStatus(200);
+    const newUser = { id: Date.now(), ...req.body };
+    users.push(newUser);
+    saveUsers();
+    res.status(201).json(newUser);
 });
 
-// Запуск сервера
+app.delete("/api/users/:id", (req, res) => {
+    const { id } = req.params;
+    users = users.filter((user) => user.id != id);
+    saveUsers();
+    res.sendStatus(204);
+});
+
+loadUsers();
+
 app.listen(PORT, () => {
-    console.log(`Сервер запущен на http://localhost:${PORT}`);
+    console.log(`Сервер работает на http://localhost:${PORT}`);
 });
