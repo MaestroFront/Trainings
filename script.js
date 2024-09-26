@@ -22,6 +22,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             body: JSON.stringify(user),
         });
 
+        document.getElementById("name").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("company").value = "";
+        document.getElementById("info").value = "";
+
         modal.style.display = "none";
         loadUsers();
     };
@@ -57,7 +62,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadUsers();
     };
 
-    window.editUser = (id) => {
-        // Вставьте здесь код для редактирования пользователя
+    window.editUser = async (id) => {
+        // Код для редактирования пользователя (показать модальное окно с текущими данными пользователя)
+
+        const response = await fetch(`/api/users/${id}`);
+        const user = await response.json();
+
+        document.getElementById("name").value = user.name;
+        document.getElementById("phone").value = user.phone;
+        document.getElementById("company").value = user.company;
+        document.getElementById("info").value = user.info;
+
+        modal.style.display = "block";
+
+        addUserBtn.onclick = async () => {
+            const updatedUser = {
+                name: document.getElementById("name").value,
+                phone: document.getElementById("phone").value,
+                company: document.getElementById("company").value,
+                info: document.getElementById("info").value,
+            };
+            await fetch(`/api/users/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedUser),
+            });
+
+            modal.style.display = "none";
+            loadUsers();
+        };
     };
 });

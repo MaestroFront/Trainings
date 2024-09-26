@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cors = require("cors");
 const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
 app.use(cors());
@@ -32,6 +32,17 @@ app.post("/api/users", (req, res) => {
     users.push(newUser);
     saveUsers();
     res.status(201).json(newUser);
+});
+
+app.put("/api/users/:id", (req, res) => {
+    const { id } = req.params;
+    const index = users.findIndex((user) => user.id == id);
+    if (index !== -1) {
+        users[index] = { id: Number(id), ...req.body };
+        saveUsers();
+        return res.json(users[index]);
+    }
+    res.status(404).send("User not found");
 });
 
 app.delete("/api/users/:id", (req, res) => {
